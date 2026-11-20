@@ -1,50 +1,90 @@
-# SecureBank — All-in-One Academic Project
+# SecureBank — Java OOP Online Banking Management System
 
-Responsive banking UI + Android WebView wrapper + Java Servlet/Hibernate/JDBC starter + MySQL schema. All banking activity is simulated; there is no real payment integration.
+**Main syllabus topics:** Inheritance and Polymorphism  
+**Supporting concepts:** Interfaces, exception handling, Collections  
+**Stack:** Java 17, Jakarta Servlet, Hibernate ORM, MySQL, Maven
 
-## What was improved in this update
+## What is included
+- Abstract `Account` parent class with `SavingsAccount` and `CurrentAccount` subclasses
+- Runtime polymorphism through overridden withdrawal and account-description methods
+- `Transferable` interface
+- Custom exceptions for invalid amounts and insufficient funds
+- `List`, `Map` and `Set` collections in the in-memory service
+- Hibernate entities for accounts and transactions
+- Servlet endpoint for a sample account API
+- MySQL schema and Hibernate configuration
+- A console demo that can be run without a database
+- A frontend placeholder page explaining the app/API setup
 
-- Added Smart Savings goals with target, saved amount, time horizon and monthly target calculation.
-- Added Expense Tracker category breakdown.
-- Added rule-based demo Fraud Alerts for large and repeated outgoing amounts (not production fraud detection).
-- Added Budget Planner with spending progress.
-- Added a clearly illustrative Credit Score Simulator; it is not a bureau score.
-- Fixed dashboard balance math using an opening balance plus ledger transactions. The seeded ledger now reconciles to the displayed starting balance.
-- Transaction search no longer navigates to another page while typing. Added category and date filters; CSV includes reference/status fields.
-- Transfer now has a review confirmation, input validation, generated demo reference, and receipt. No real money moves.
-- Added JDBC-backed `/api/auth` Servlet for customer registration/login/logout/session lookup. Passwords are stored using PBKDF2-HMAC-SHA256; database configuration is read from environment variables.
-- Added `/api/admin/customers`, which checks the server-side session role before returning customer/KYC records.
-- Extended MySQL schema for customers, beneficiaries, goals, budgets and KYC requests.
-- Synced the shared responsive UI to the website, Java webapp, and Android assets.
+## Important distinction
+This is an **academic starter project**, not a production-ready banking application. The console demo works independently. The Servlet/Hibernate/MySQL path requires the environment setup below and is intentionally kept minimal. It does not connect to any real bank or payment network. Never use real account, card, KYC or password information.
 
-## Run the UI preview
+## 1. Run the OOP demo first
+Install JDK 17+ and Maven. From this project directory run:
 
-Open `web/index.html` in a browser. When opened as a local file, the app runs in local demo mode; this mode does not provide server authentication or persistent database storage. The Android project loads the same UI from local assets.
+```bash
+mvn -q compile exec:java -Dexec.mainClass=in.securebank.demo.SecureBankDemo
+```
 
-## Configure the Java backend
+This shows inheritance, method overriding, runtime polymorphism, interface usage, custom exceptions and collections. Hibernate annotations are included in the model classes, so Maven resolves the required dependencies.
 
-Requirements: JDK 17+, Maven, MySQL 8+, and a Jakarta Servlet 6 compatible container (for example Tomcat 10.1+).
+## 2. Configure MySQL for the web module
+1. Create a database using `database/schema.sql`.
+2. Set environment variables rather than committing credentials:
+   - `SECUREBANK_DB_URL` (example: `jdbc:mysql://localhost:3306/securebank?serverTimezone=UTC`)
+   - `SECUREBANK_DB_USER`
+   - `SECUREBANK_DB_PASSWORD`
+3. Configure a Jakarta Servlet 6 compatible container such as Tomcat 10.1.
+4. Build the WAR with `mvn clean package`.
+5. Deploy `target/securebank.war` to Tomcat.
+6. Open `/securebank/api/accounts` on the local server.
 
-1. Create the database and tables by running `java-backend/database/schema.sql` in MySQL.
-2. Configure environment variables before starting the servlet container:
-   - `SECUREBANK_DB_URL` (default `jdbc:mysql://localhost:3306/securebank?useSSL=false&serverTimezone=UTC`)
-   - `SECUREBANK_DB_USER` (default `root`)
-   - `SECUREBANK_DB_PASSWORD` (set your own local password; do not commit secrets)
-3. From `java-backend`, run `mvn package`.
-4. Deploy `target/securebank.war` to Tomcat 10.1+ and open the app under its context path. The UI calls the relative `api/auth` endpoint when served over HTTP(S).
-5. Use `/api/auth` with POST form fields `action=register|login`, `email`, `password`, and for registration `name`. POST `action=logout` to end the session; GET `/api/auth` returns the current session identity. `/api/admin/customers` requires an `ADMIN` session.
+The servlet API uses Jakarta namespaces and therefore requires Tomcat 10.1+ (not Tomcat 9).
 
-To create an administrator for an academic demo, register a normal account and change its role manually in your local database using a trusted SQL client. Do not expose this demo database or admin account publicly.
+## Java OOP concepts for your viva
+- **Inheritance:** `SavingsAccount extends Account`; `CurrentAccount extends Account`.
+- **Polymorphism:** a variable of type `Account` can hold either child object. Calling `withdraw()` invokes the child override at runtime.
+- **Interface:** `Transferable` specifies a transfer contract independently of a particular account class.
+- **Exception handling:** custom checked exceptions express invalid transfer amounts and insufficient funds.
+- **Collections:** `Map<String, Account>` provides account lookup; `List<Transaction>` keeps transaction history; `Set<String>` helps avoid duplicate account numbers.
+- **Hibernate:** entity classes map Java objects to relational database tables.
+- **Servlet:** accepts HTTP requests and returns JSON.
 
-## Important project scope / limitations
-
-This remains an academic prototype, not a production banking system. The new savings, expense, budget, credit-score and fraud features currently calculate in the browser from demo data. The new JDBC auth and admin endpoints are database-backed, but beneficiaries, KYC, account balances, and transaction mutations are not yet fully routed through a unified server-side service; do not treat local UI state as authoritative. Existing Hibernate OOP models and account endpoint remain as teaching examples. Production use would require HTTPS, CSRF protection, secure cookie settings, rate limiting, audit logging, transaction locking/atomic DB updates, authorization checks on every customer-owned record, migrations, and automated integration tests.
-
-## Java OOP topics
-
-`Account` is the abstract parent for `SavingsAccount` and `CurrentAccount`; transaction types demonstrate inheritance; `Transferable` demonstrates an interface; custom exceptions demonstrate exception handling; collections are used in the demo service. See `java-backend/README.md` for the original starter notes.
+## Current demo limitations
+- The console demo is the reliable first checkpoint.
+- The API endpoint is a starter demonstration, not a full customer login, beneficiary, KYC, or admin implementation.
+- Before a real web deployment, add authentication, password hashing, role-based access control, CSRF protection, server-side validation, audit logs, database transactions and secure secrets management.
 
 
-## UI/UX update: SecureBot and Smart Interest Lab
+## Advanced login: email OTP and password reset
 
-The web, Java webapp, and Android WebView UI now include a rule-based SecureBot FAQ widget and an illustrative Smart Interest Lab. The chatbot is a frontend FAQ prototype, not a live AI service. The interest calculator uses illustrative rates and is not connected to a real account. Rebuild the WAR from `java-backend` (`mvn clean package`) and redeploy `target/securebank.war` to Tomcat to see the webapp changes. For the local UI preview, open `web/index.html`.
+The login endpoint now expects server-side email delivery for OTP and reset codes. The UI calls `POST /api/auth` with these actions: `login`, `register`, `verify-otp`, `resend-otp`, `forgot-password`, `reset-password`, and `logout`.
+
+### SMTP setup (Gmail example)
+
+1. Enable 2-Step Verification on the Gmail account used by the project.
+2. Create a Google App Password in Google Account security settings. Do not use your normal Gmail password.
+3. Set these environment variables in the same Terminal session used to start Tomcat:
+
+```bash
+export SECUREBANK_SMTP_HOST="smtp.gmail.com"
+export SECUREBANK_SMTP_PORT="587"
+export SECUREBANK_SMTP_USER="your-project-email@gmail.com"
+export SECUREBANK_SMTP_PASSWORD="your-16-character-app-password"
+export SECUREBANK_SMTP_FROM="your-project-email@gmail.com"
+```
+
+4. Configure the existing database variables if needed:
+```bash
+export SECUREBANK_DB_URL="jdbc:mysql://localhost:3306/securebank?useSSL=false&serverTimezone=UTC"
+export SECUREBANK_DB_USER="root"
+export SECUREBANK_DB_PASSWORD="your-database-password"
+```
+5. Start Tomcat from that same Terminal session so it inherits the variables. Never commit credentials to Git or put them in JavaScript.
+
+### Security notes
+
+- OTP and password-reset codes expire after five minutes and are limited to five verification attempts per session.
+- Login lockout is an in-memory, per-server-instance protection (five failed attempts, 15-minute lock). It resets if Tomcat restarts and is not a substitute for a persistent distributed rate limiter.
+- HTTP session timeout is 15 minutes and the session cookie is HttpOnly. For production, serve only over HTTPS and configure Secure/SameSite cookies, CSRF protection, persistent rate limiting, email verification status, audit logging, and monitored secret storage.
+- This is an educational banking prototype, not production banking software. Do not use real customer credentials or money.
