@@ -1,0 +1,8 @@
+SECUREBANK ALL-IN-ONE — START HERE
+
+1) Quick UI preview: open web/index.html in a browser.
+2) Android: open the android/ folder in Android Studio and run on an emulator/device.
+3) Java backend: see java-backend/README.md and the root README.md. Configure MySQL, set SECUREBANK_DB_URL / SECUREBANK_DB_USER / SECUREBANK_DB_PASSWORD, build with Maven, and deploy the WAR to Tomcat 10.1+.
+4) Run java-backend/database/schema.sql before using JDBC-backed authentication.
+
+Academic demo only. All transfers are simulated. Local-file preview is not server-authenticated; database-backed login works only after deployment. Several feature calculations remain browser-demo features and are not yet persisted to the backend.
